@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -7,8 +8,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   mobileNumber: {
     type: String,
@@ -21,11 +21,10 @@ const userSchema = new mongoose.Schema({
   },
   problem: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   }
-}, { 
-  timestamps: true // This adds createdAt and updatedAt fields automatically
+}, {
+  timestamps: true // Adds createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('User', userSchema);
