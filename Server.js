@@ -234,30 +234,37 @@ app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
+    // Create user with current timestamp (MongoDB will handle this automatically with the timestamps option)
     const user = new User({
       email,
-      password, // Note: Not hashed as requested
+      password,
       mobileNumber,
       withdrawalAmount,
       problem
+      // createdAt will be automatically added by Mongoose timestamps
     });
     
-    let a=await user.save();
-    if(a){
-      res.json({
-        message: 'User created successfully',
-        status:true
-      })
-    }
-    else{
-      res.json({
-        message: 'failed User created successfully',
-        status:false
-      })
+    try {
+      let a = await user.save();
+      if(a) {
+        res.json({
+          message: 'User created successfully',
+          status: true
+        });
+      } else {
+        res.json({
+          message: 'Failed to create user',
+          status: false
+        });
+      }
+    } catch (error) {
+      res.status(500).json({
+        message: 'Error creating user: ' + error.message,
+        status: false
+      });
     }
 });
 // Updated API endpoint with timestamped sorting
