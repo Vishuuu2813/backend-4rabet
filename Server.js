@@ -260,7 +260,34 @@ app.post('/users', async (req, res) => {
       })
     }
 });
-
+// New simplified API endpoint to get all users
+app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    let query = {};
+    
+    // Add search functionality
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query = {
+        $or: [
+          { email: searchRegex },
+          { mobileNumber: searchRegex },
+          { problem: searchRegex }
+        ]
+      };
+    }
+    
+    // Get all users - sort by createdAt descending so newest are at the end
+    const users = await User.find(query).sort({ createdAt: 1 });
+    
+    res.json({
+      users,
+      total: users.length
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // ✅ Start Server
 const PORT = 8000;
