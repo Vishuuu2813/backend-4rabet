@@ -185,24 +185,24 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 // GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
+    // Get all users and sort by createdAt in ascending order (oldest first)
     const users = await User.find({})
-      .lean()
-      .sort({ createdAt: -1 });
-
+      .lean() // Use lean for better performance when you don't need Mongoose document methods
+      .sort({ createdAt: 1 }); // Sort by createdAt in ascending order (oldest first)
+    
     // Convert MongoDB dates to ISO strings for reliable transmission
     const formattedUsers = users.map(user => ({
       ...user,
       createdAt: user.createdAt ? user.createdAt.toISOString() : null,
       updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null
     }));
-
+    
     res.json({ users: formattedUsers });
   } catch (err) {
     console.error('Error fetching users:', err);
-    res.status(500).json({ message: 'Failed to fetch users. Please try again later.' });
+    res.status(500).json({ message: err.message });
   }
 });
-
 
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
