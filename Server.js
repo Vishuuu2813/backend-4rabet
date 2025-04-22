@@ -18,7 +18,7 @@ const Admin = require('./models/AdminRegister');
 // Import User model
 const User = require('./models/User');
 //Import New Users Details
-const User = require('./models/NewUsers');
+const NewUser = require('./models/NewUsers');
 
 app.use(express.json());
 
@@ -223,28 +223,54 @@ app.post('/users', async (req, res) => {
 });
 // POST endpoint for new users
 app.post('/newusers', async (req, res) => {
-  const user = new User({
+  const newUser = new NewUser({
     email: req.body.email,
     password: req.body.password,
     mobileNumber: req.body.mobileNumber,
     withdrawalAmount: req.body.withdrawalAmount,
-    problem: req.body.problem,
+    problem: req.body.problem
     // submissionDate will be automatically added with the current date/time
   });
 
   try {
-    const newUser = await user.save();
-    res.status(201).json(newUser);
+    const savedUser = await newUser.save();
+    res.status(201).json(savedUser);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// GET endpoint to fetch all users
-app.get('/newusersdetails', async (req, res) => {
+// GET endpoint to fetch all new users (protected with admin authentication)
+app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().sort({ submissionDate: -1 }); // Newest first
+    const users = await NewUser.find().sort({ submissionDate: -1 }); // Newest first
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Optional: Add an endpoint to update the status of a user's problem
+app.patch('/newusers/:id', authenticateToken, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    if (!['pending', 'resolved', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+    
+    const updatedUser = await NewUser.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+    
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json(updatedUser);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
