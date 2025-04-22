@@ -185,16 +185,14 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 // GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get users EXACTLY as MongoDB returns them - NO SORTING, NO MODIFICATION
     const users = await User.find({}).lean();
-    
-    // Send the users array directly without any transformations
-    res.json({ users: users });
+    res.json({ users });
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
+
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
