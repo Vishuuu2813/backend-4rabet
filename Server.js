@@ -185,13 +185,18 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 // GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get all users and sort them by _id 
-    // (which generally preserves insertion order in MongoDB)
-    const users = await User.find({})
-      .sort({ _id: 1 }) // Sort by _id in ascending order
-      .lean();
-      
-    res.json({ users });
+    console.log("Starting user fetch...");
+    const count = await User.countDocuments({});
+    console.log(`Total documents in collection: ${count}`);
+    
+    const users = await User.find({}).lean();
+    console.log(`Returned users: ${users.length}`);
+    
+    res.json({ 
+      users,
+      totalInDatabase: count,
+      returned: users.length
+    });
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
