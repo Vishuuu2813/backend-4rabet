@@ -26,7 +26,5 @@ const userSchema = new mongoose.Schema({
     type: String, // Store as string to preserve formatted date
     required: true
   }
-}, {
-  timestamps: false // Disable automatic timestamps
 });
 module.exports = mongoose.model('User', userSchema);
