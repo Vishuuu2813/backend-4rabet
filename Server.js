@@ -183,7 +183,7 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
-app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
+app.get('/usersdetails', async (req, res) => {
   try {
     const users = await User.find({}).lean();
     res.json({ users });
