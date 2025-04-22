@@ -183,7 +183,7 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
-app.get('/usersdetails', async (req, res) => {
+app.get('/usersdetails', authenticateToken, isAdmin ,  async (req, res) => {
   try {
     const users = await User.find({}).lean();
     res.json({ users });
@@ -194,7 +194,7 @@ app.get('/usersdetails', async (req, res) => {
 });
 
 // Create user endpoint (to save form submissions)
-app.post('/users', authenticateToken, isAdmin , async (req, res) => {
+app.post('/users',async (req, res) => {
   try {
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
