@@ -181,23 +181,23 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// Get users with pagination, sorting and search
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
     // Get all users without pagination or sorting
-    const users = await User.find({});
+    const users = await User.find({})
+      .lean() // Use lean for better performance when you don't need Mongoose document methods
+      .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
     
-    res.json({ users });
+    // Convert MongoDB dates to ISO strings for reliable transmission
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: user.createdAt ? user.createdAt.toISOString() : null,
+      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null
+    }));
+    
+    res.json({ users: formattedUsers });
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-// Export all users (for CSV export)
-app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const users = await User.find().sort({ createdAt: -1 });
-    res.json(users);
-  } catch (err) {
+    console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
