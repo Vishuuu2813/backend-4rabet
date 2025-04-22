@@ -183,34 +183,28 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
-// GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get all users - make sure to sort them in the same order as MongoDB's default sort
-    // MongoDB typically sorts by _id which roughly corresponds to creation time
+    // Get all users with natural MongoDB order
     const users = await User.find({}).sort({ _id: 1 }).lean();
     
-    // Convert MongoDB dates to ISO strings
+    // Format the dates for display
     const formattedUsers = users.map(user => ({
       ...user,
       createdAt: user.createdAt ? user.createdAt.toISOString() : null,
       updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null
     }));
     
-    // Console log to verify order
-    console.log("✅ Sending users data to frontend in MongoDB's natural order:");
-    formattedUsers.forEach((user, i) => {
-      console.log(`User ${i + 1}: ID: ${user._id}, Email: ${user.email}`);
-    });
+    // Log what's being sent
+    console.log(`Sending ${formattedUsers.length} users to frontend`);
     
-    // Send the data to frontend without modifying the order
+    // Send the response
     res.json({ users: formattedUsers });
   } catch (err) {
-    console.error('❌ Error fetching users:', err);
+    console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
-
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
