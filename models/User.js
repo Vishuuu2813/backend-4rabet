@@ -21,10 +21,6 @@ const userSchema = new mongoose.Schema({
   problem: {
     type: String,
     required: true
-  },
-  timestamp: {
-    type: String, // Store as string to preserve formatted date
-    required: true
   }
 });
 module.exports = mongoose.model('User', userSchema);
