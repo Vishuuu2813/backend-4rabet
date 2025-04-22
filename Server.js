@@ -181,16 +181,12 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 
-// Get users with pagination, sorting and search
+// Get users with pagination and search (removed sorting options)
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const sortField = req.query.sortField || 'createdAt';
-    const sortDirection = req.query.sortDirection === 'asc' ? 1 : -1;
-    const sortOptions = {};
-    sortOptions[sortField] = sortDirection;
     
     let query = {};
     
@@ -206,9 +202,10 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
       };
     }
     
-    // Get users with pagination and sorting
+    // Get users with pagination - always sort by createdAt (oldest first)
+    // This ensures new users appear at the end
     const users = await User.find(query)
-      .sort(sortOptions)
+      .sort({ createdAt: 1 }) // Fix to always sort by creation date (ascending)
       .skip(skip)
       .limit(limit);
     
@@ -226,13 +223,11 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-
-
-
 // Export all users (for CSV export)
 app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
+    // Changed sorting to ascending order so newest users are at the end
+    const users = await User.find().sort({ createdAt: 1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
