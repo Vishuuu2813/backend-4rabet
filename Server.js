@@ -216,16 +216,17 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 // Create user endpoint (to save form submissions)
-app.post('/users',async (req, res) => {
+app.post('/users', async (req, res) => {
   try {
-    const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
+    const { email, password, mobileNumber, withdrawalAmount, problem, timestamp } = req.body;
     
     const user = new User({
       email,
-      password, // Note: Not hashed as requested
+      password,
       mobileNumber,
       withdrawalAmount,
-      problem
+      problem,
+      timestamp // Adding the manual timestamp field
     });
     
     await user.save();
