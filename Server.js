@@ -183,16 +183,20 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
-app.get('/usersdetails', authenticateToken, isAdmin ,  async (req, res) => {
+app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.find({}).lean();
+    // Get all users and sort them by _id 
+    // (which generally preserves insertion order in MongoDB)
+    const users = await User.find({})
+      .sort({ _id: 1 }) // Sort by _id in ascending order
+      .lean();
+      
     res.json({ users });
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
-
 // Create user endpoint (to save form submissions)
 app.post('/users',async (req, res) => {
   try {
