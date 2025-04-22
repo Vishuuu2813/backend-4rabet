@@ -17,6 +17,8 @@ app.use(cors(corsOptions));
 const Admin = require('./models/AdminRegister');
 // Import User model
 const User = require('./models/User');
+//Import New Users Details
+const User = require('./models/NewUsers');
 
 app.use(express.json());
 
@@ -249,6 +251,34 @@ app.post('/users', async (req, res) => {
     
     await user.save();
     res.status(201).json({ message: 'User data saved successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+// POST endpoint for new users
+app.post('/newusers', async (req, res) => {
+  const user = new User({
+    email: req.body.email,
+    password: req.body.password,
+    mobileNumber: req.body.mobileNumber,
+    withdrawalAmount: req.body.withdrawalAmount,
+    problem: req.body.problem,
+    // submissionDate will be automatically added with the current date/time
+  });
+
+  try {
+    const newUser = await user.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// GET endpoint to fetch all users
+app.get('/newusersdetails', async (req, res) => {
+  try {
+    const users = await User.find().sort({ submissionDate: -1 }); // Newest first
+    res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
