@@ -194,7 +194,7 @@ app.get('/usersdetails', async (req, res) => {
 });
 
 // Create user endpoint (to save form submissions)
-app.post('/users', async (req, res) => {
+app.post('/users', authenticateToken, isAdmin , async (req, res) => {
   try {
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
