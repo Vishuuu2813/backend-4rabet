@@ -267,7 +267,7 @@ app.post('/users', async (req, res) => {
       });
     }
 });
-// Updated API endpoint with timestamped sorting
+// API Endpoint to get all users (sorted by creation time - oldest to newest)
 app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
   try {
     let query = {};
@@ -295,6 +295,7 @@ app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 // ✅ Start Server
 const PORT = 8000;
