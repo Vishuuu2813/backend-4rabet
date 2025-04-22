@@ -183,19 +183,32 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
+// Add this updated route to your backend code
+
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    console.log("Starting user fetch...");
-    const count = await User.countDocuments({});
-    console.log(`Total documents in collection: ${count}`);
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
     
-    const users = await User.find({}).lean();
-    console.log(`Returned users: ${users.length}`);
+    // Get total count of users
+    const totalUsers = await User.countDocuments();
     
-    res.json({ 
+    // Get paginated users
+    const users = await User.find({})
+      .sort({ _id: 1 }) // Sort by _id to maintain MongoDB's natural order
+      .skip(skip)
+      .limit(limit)
+      .lean();
+    
+    console.log(`Fetched ${users.length} users for page ${page} (total: ${totalUsers})`);
+    
+    res.json({
       users,
-      totalInDatabase: count,
-      returned: users.length
+      totalUsers,
+      currentPage: page,
+      totalPages: Math.ceil(totalUsers / limit)
     });
   } catch (err) {
     console.error('Error fetching users:', err);
