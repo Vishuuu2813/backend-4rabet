@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -8,7 +7,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true, // Not making password required as per your requirements
+    required: true,
     trim: true
   },
   mobileNumber: {
@@ -25,11 +24,8 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   }
-  , 
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+}, { 
+  timestamps: true // This adds createdAt and updatedAt fields automatically
 });
 
 module.exports = mongoose.model('User', userSchema);
