@@ -185,21 +185,11 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 // GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get all users with natural MongoDB order
-    const users = await User.find({}).sort({ _id: 1 }).lean();
+    // Get users EXACTLY as MongoDB returns them - NO SORTING, NO MODIFICATION
+    const users = await User.find({}).lean();
     
-    // Format the dates for display
-    const formattedUsers = users.map(user => ({
-      ...user,
-      createdAt: user.createdAt ? user.createdAt.toISOString() : null,
-      updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null
-    }));
-    
-    // Log what's being sent
-    console.log(`Sending ${formattedUsers.length} users to frontend`);
-    
-    // Send the response
-    res.json({ users: formattedUsers });
+    // Send the users array directly without any transformations
+    res.json({ users: users });
   } catch (err) {
     console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
