@@ -183,25 +183,33 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET endpoint to fetch user details
+// GET endpoint to fetch user details
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get all users without sorting to maintain the insertion order
-    const users = await User.find({})
-      .lean(); // Use lean for better performance when you don't need Mongoose document methods
-    
-    // Convert MongoDB dates to ISO strings for reliable transmission
+    // Get all users
+    const users = await User.find({}).lean();
+
+    // Convert MongoDB dates to ISO strings
     const formattedUsers = users.map(user => ({
       ...user,
       createdAt: user.createdAt ? user.createdAt.toISOString() : null,
       updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null
     }));
-    
+
+    // 🔍 Console log to inspect what is being sent
+    console.log("✅ Sending users data to frontend:");
+    formattedUsers.forEach((user, i) => {
+      console.log(`User ${i + 1}: Email: ${user.email}, CreatedAt: ${user.createdAt}`);
+    });
+
+    // Send the data to frontend
     res.json({ users: formattedUsers });
   } catch (err) {
-    console.error('Error fetching users:', err);
+    console.error('❌ Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
+
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
