@@ -260,7 +260,7 @@ app.post('/users', async (req, res) => {
       })
     }
 });
-// New simplified API endpoint to get all users
+// Updated API endpoint with timestamped sorting
 app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
   try {
     let query = {};
@@ -277,7 +277,7 @@ app.get('/allusers', authenticateToken, isAdmin, async (req, res) => {
       };
     }
     
-    // Get all users - sort by createdAt descending so newest are at the end
+    // Get all users - sort by createdAt ascending (oldest to newest)
     const users = await User.find(query).sort({ createdAt: 1 });
     
     res.json({
