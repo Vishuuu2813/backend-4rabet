@@ -250,31 +250,6 @@ app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
   }
 });
 
-// Optional: Add an endpoint to update the status of a user's problem
-app.patch('/newusers/:id', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
-    
-    if (!['pending', 'resolved', 'rejected'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
-    }
-    
-    const updatedUser = await NewUser.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
-    
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    
-    res.json(updatedUser);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
 
 
 
