@@ -247,18 +247,19 @@ app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
+    console.log('Received data from frontend:', req.body); // 👈 Yeh line dekhne ke liye
+
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
-    
-    // Create new user with explicit timestamp
+
     const user = new User({
       email,
       password,
       mobileNumber,
       withdrawalAmount,
       problem,
-      timestamp: new Date().toISOString() // Generate timestamp on the server side
+      timestamp: new Date().toISOString()
     });
-    
+
     await user.save();
     res.status(201).json({ message: 'User data saved successfully' });
   } catch (err) {
