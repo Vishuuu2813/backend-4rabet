@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -24,8 +23,8 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   timestamp: {
-    type: String, 
-    required: true
+    type: Date,
+    default: Date.now  // Automatically sets current date and time
   }
 });
 
