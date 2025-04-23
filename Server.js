@@ -183,12 +183,47 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 
 
 // Get users with pagination, sorting and search
-app.get('/usersdetails', async (req, res) => {
+app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const users = await User.find().select('email mobileNumber problem createdAt');
-    res.json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortField = req.query.sortField || 'createdAt';
+    const sortDirection = req.query.sortDirection === 'asc' ? 1 : -1;
+    const sortOptions = {};
+    sortOptions[sortField] = sortDirection;
+    
+    let query = {};
+    
+    // Add search functionality
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query = {
+        $or: [
+          { email: searchRegex },
+          { mobileNumber: searchRegex },
+          { problem: searchRegex }
+        ]
+      };
+    }
+    
+    // Get users with pagination and sorting
+    const users = await User.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
+    
+    // Get total count
+    const totalUsers = await User.countDocuments(query);
+    
+    res.json({
+      users,
+      totalUsers,
+      currentPage: page,
+      totalPages: Math.ceil(totalUsers / limit)
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message });
   }
 });
 // Export all users (for CSV export)
