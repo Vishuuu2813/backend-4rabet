@@ -182,99 +182,77 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 });
 
 
-// GET endpoint to fetch user details
-// Add this updated route to your backend code
-
+// Get users with pagination, sorting and search
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
-    // Get pagination parameters from query string
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const sortField = req.query.sortField || 'createdAt';
+    const sortDirection = req.query.sortDirection === 'asc' ? 1 : -1;
+    const sortOptions = {};
+    sortOptions[sortField] = sortDirection;
     
-    // Get total count of users
-    const totalUsers = await User.countDocuments();
+    let query = {};
     
-    // Get paginated users - sort by timestamp in descending order (newest first)
-    const users = await User.find({})
-      .sort({ timestamp: -1 }) // Sort by timestamp descending (newest first)
+    // Add search functionality
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, 'i');
+      query = {
+        $or: [
+          { email: searchRegex },
+          { mobileNumber: searchRegex },
+          { problem: searchRegex }
+        ]
+      };
+    }
+    
+    // Get users with pagination and sorting
+    const users = await User.find(query)
+      .sort(sortOptions)
       .skip(skip)
-      .limit(limit)
-      .lean(); // Use lean() for better performance
+      .limit(limit);
     
-    // Convert dates to strings to avoid serialization issues
-    const formattedUsers = users.map(user => {
-      if (user.timestamp) {
-        // Convert MongoDB date object to ISO string for consistent handling
-        const date = new Date(user.timestamp);
-        return {
-          ...user,
-          timestamp: date.toISOString()
-        };
-      }
-      return user;
-    });
-    
-    console.log(`Fetched ${users.length} users for page ${page} (total: ${totalUsers})`);
+    // Get total count
+    const totalUsers = await User.countDocuments(query);
     
     res.json({
-      users: formattedUsers,
+      users,
       totalUsers,
       currentPage: page,
       totalPages: Math.ceil(totalUsers / limit)
     });
   } catch (err) {
-    console.error('Error fetching users:', err);
     res.status(500).json({ message: err.message });
   }
 });
-// POST endpoint for new users
-app.post('/newusers', async (req, res) => {
-  const newUser = new NewUser({
-    email: req.body.email,
-    password: req.body.password,
-    mobileNumber: req.body.mobileNumber,
-    withdrawalAmount: req.body.withdrawalAmount,
-    problem: req.body.problem
-    // submissionDate will be automatically added with the current date/time
-  });
 
+// Export all users (for CSV export)
+app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
   try {
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// GET endpoint to fetch all new users (protected with admin authentication)
-app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
-  try {
-    const users = await NewUser.find().sort({ submissionDate: -1 }); // Newest first
+    const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
-    console.log('Received data from frontend:', req.body);
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
     const user = new User({
       email,
-      password,
+      password, // Note: Not hashed as requested
       mobileNumber,
       withdrawalAmount,
       problem
-      // timestamp will be automatically set by the schema default
     });
     
     await user.save();
     res.status(201).json({ message: 'User data saved successfully' });
   } catch (err) {
-    console.error('Error saving user data:', err);
     res.status(500).json({ message: err.message });
   }
 });
