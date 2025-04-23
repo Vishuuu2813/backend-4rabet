@@ -247,16 +247,16 @@ app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
-    const { email, password, mobileNumber, withdrawalAmount, problem, createdAt } = req.body;
+    const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
     
-    // Rename createdAt to timestamp for the database
+    // Create new user with explicit timestamp
     const user = new User({
       email,
       password,
       mobileNumber,
       withdrawalAmount,
       problem,
-      timestamp: createdAt // Store createdAt from frontend as timestamp in database
+      timestamp: new Date().toISOString() // Generate timestamp on the server side
     });
     
     await user.save();
@@ -266,7 +266,6 @@ app.post('/users', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 // ✅ Start Server
 const PORT = 8000;
 app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
