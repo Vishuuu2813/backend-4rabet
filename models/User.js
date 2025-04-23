@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -24,11 +23,10 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   timestamp: {
-    type: String,
+    type: String, // Store as string to preserve formatted date
     required: true
   }
 }, {
-  timestamps: false // Disabling automatic timestamps
+  timestamps: false // Disable automatic timestamps
 });
-
 module.exports = mongoose.model('User', userSchema);
