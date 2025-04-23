@@ -247,19 +247,18 @@ app.get('/newusersdetails', authenticateToken, isAdmin, async (req, res) => {
 // Create user endpoint (to save form submissions)
 app.post('/users', async (req, res) => {
   try {
-    console.log('Received data from frontend:', req.body); // 👈 Yeh line dekhne ke liye
-
+    console.log('Received data from frontend:', req.body);
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
-
+    
     const user = new User({
       email,
       password,
       mobileNumber,
       withdrawalAmount,
-      problem,
-      timestamp: new Date().toISOString()
+      problem
+      // timestamp will be automatically set by the schema default
     });
-
+    
     await user.save();
     res.status(201).json({ message: 'User data saved successfully' });
   } catch (err) {
