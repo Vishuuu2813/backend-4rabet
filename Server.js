@@ -195,9 +195,9 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
     // Get total count of users
     const totalUsers = await User.countDocuments();
     
-    // Get paginated users
+    // Get paginated users - sort by timestamp in descending order (newest first)
     const users = await User.find({})
-      .sort({ _id: 1 }) // Sort by _id to maintain MongoDB's natural order
+      .sort({ timestamp: -1 }) // Sort by timestamp descending (newest first)
       .skip(skip)
       .limit(limit)
       .lean();
