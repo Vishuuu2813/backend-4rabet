@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -21,11 +22,9 @@ const userSchema = new mongoose.Schema({
   problem: {
     type: String,
     required: true
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now  // Automatically sets current date and time
   }
+}, {
+  timestamps: true // Adds createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('User', userSchema);
