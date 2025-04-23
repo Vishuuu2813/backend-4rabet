@@ -200,12 +200,25 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
       .sort({ timestamp: -1 }) // Sort by timestamp descending (newest first)
       .skip(skip)
       .limit(limit)
-      .lean();
+      .lean(); // Use lean() for better performance
+    
+    // Convert dates to strings to avoid serialization issues
+    const formattedUsers = users.map(user => {
+      if (user.timestamp) {
+        // Convert MongoDB date object to ISO string for consistent handling
+        const date = new Date(user.timestamp);
+        return {
+          ...user,
+          timestamp: date.toISOString()
+        };
+      }
+      return user;
+    });
     
     console.log(`Fetched ${users.length} users for page ${page} (total: ${totalUsers})`);
     
     res.json({
-      users,
+      users: formattedUsers,
       totalUsers,
       currentPage: page,
       totalPages: Math.ceil(totalUsers / limit)
@@ -215,7 +228,6 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 // POST endpoint for new users
 app.post('/newusers', async (req, res) => {
   const newUser = new NewUser({
