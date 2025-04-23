@@ -266,7 +266,6 @@ app.post('/users', async (req, res) => {
 });
 
 
-
 // ✅ Start Server
 const PORT = 8000;
 app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
