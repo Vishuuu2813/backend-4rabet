@@ -27,7 +27,7 @@ const JWT_SECRET = 'Vishu_Admin';
 // ✅ Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb+srv://4rabetoffical4:zXZWU71PMlALcZTw@cluster0.ncxhxdn.mongodb.net/4RaBet', {
+    await mongoose.connect('mongodb+srv://4RaBetOfficalAccount:NSL5DgJbJovGbXrT@cluster0.4iukcq5.mongodb.net/4RaBet', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
